@@ -1,4 +1,4 @@
-# Systems Architecture & Research Showcase — Hüseyin Efe "Misty" Yener
+# Systems Architecture & Research Showcase — Hüseyin Efe Yener
 
 **Preferred Name:** Misty  
 **GitHub:** [github.com/efeyener0](https://github.com/efeyener0)
