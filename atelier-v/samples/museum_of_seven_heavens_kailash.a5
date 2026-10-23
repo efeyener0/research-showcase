@@ -1,0 +1,629 @@
+atelier 5.0
+
+/// Museum of Seven Heavens on Mountain of Kailash
+/// Grand multi-domain showcase uniting:
+///   1. Terrain        (map::terrain)
+///   2. Level Design   (map::arched_bridge, map::staircase, map::boss_arena, map::corridor)
+///   3. Architecture   (gothic::clustered_column, gothic::pointed, gothic::ogee, gothic::rib_vault,
+///                      gothic::flying_buttress, gothic::rose_window, gothic::tracery_window,
+///                      gothic::spire, gothic::pinnacle)
+///   4. Character      (character::human, appendage::halo, appendage::wing, jewelry::circlet, jewelry::necklace)
+///   5. Weapons/Relics (weapon::longsword, weapon::heater_shield, jewelry::gem, jewelry::bezel)
+///   6. Monsters       (creature::monster [draconic & quadruped], creature::carapace_plate, appendage::wing)
+
+import map
+import gothic
+import character
+import creature
+import weapon
+import jewelry
+import appendage
+import std::curve
+import std::profile
+import std::sweep
+
+// ---------------------------------------------------------------------------
+// Top-Level Parametric Controls
+// ---------------------------------------------------------------------------
+
+/// Radius of the Ring of Seven Heavens around the central Kailash sanctuary.
+param seven_heavens_radius: Length = 11.5m in 8.0m..=16.0m
+
+/// Height of the central Axis Mundi spire crowning the Museum.
+param axis_mundi_spire_height: Length = 18.0m in 12.0m..=26.0m
+
+/// Blade length of the Seraph Curator's Sword of the Seventh Heaven.
+param relic_blade_length: Length = 104cm in 80cm..=130cm
+
+// ---------------------------------------------------------------------------
+// Material Palette (Opaque, Dielectric Stained Glass & Chiang Hair BSDF)
+// ---------------------------------------------------------------------------
+
+material kailash_basalt {
+  init.base  = #23262e
+  init.metal = 0.0
+  init.rough = 0.82
+}
+
+material celestial_marble {
+  init.base  = #eee9df
+  init.metal = 0.0
+  init.rough = 0.36
+}
+
+material astral_slate {
+  init.base  = #2b3040
+  init.metal = 0.0
+  init.rough = 0.44
+}
+
+material divine_gold {
+  init.base  = lin(1.0, 0.82, 0.38)
+  init.metal = 1.0
+  init.rough = 0.14
+}
+
+material meteoric_steel {
+  init.base  = #c8d0dc
+  init.metal = 1.0
+  init.rough = 0.12
+}
+
+material cord_leather {
+  init.base  = #3a2318
+  init.metal = 0.0
+  init.rough = 0.68
+}
+
+material lapis_enamel {
+  init.base  = #1b3b88
+  init.metal = 0.1
+  init.rough = 0.20
+}
+
+material seraph_alabaster {
+  init.base  = #f5ece2
+  init.metal = 0.0
+  init.rough = 0.34
+}
+
+material seraph_feather {
+  init.base        = #faf6ee
+  init.metal       = 0.0
+  init.rough       = 0.38
+  init.sheen       = lin(0.95, 0.88, 0.72)
+  init.sheen_rough = 0.30
+}
+
+material silver_hair {
+  init.model          = .hair
+  init.melanin        = 0.18
+  init.pheomelanin    = 0.05
+  init.hair_rough     = 0.20
+  init.hair_azimuthal = 0.25
+}
+
+material solar_halo {
+  init.base  = lin(1.0, 0.92, 0.65)
+  init.metal = 0.8
+  init.rough = 0.15
+  init.emit  = lin(2.4, 1.9, 0.9)
+}
+
+material abyssal_chitin {
+  init.base  = #28151d
+  init.metal = 0.25
+  init.rough = 0.32
+}
+
+material draconic_wing_membrane {
+  init.base  = #441824
+  init.metal = 0.0
+  init.rough = 0.52
+}
+
+material dragon_bone {
+  init.base  = #dfd5c0
+  init.metal = 0.0
+  init.rough = 0.42
+}
+
+material lead {
+  init.base  = #36393f
+  init.metal = 0.85
+  init.rough = 0.45
+}
+
+material glass_ruby {
+  init.model      = .dielectric
+  init.base       = #ff2438
+  init.rough      = 0.05
+  init.ior        = 1.64
+  init.dispersion = 0.016
+  init.absorb     = lin(0.3, 3.8, 4.2)
+}
+
+material glass_cobalt {
+  init.model      = .dielectric
+  init.base       = #2255ff
+  init.rough      = 0.05
+  init.ior        = 1.64
+  init.dispersion = 0.016
+  init.absorb     = lin(4.0, 2.2, 0.2)
+}
+
+material glass_amber {
+  init.model      = .dielectric
+  init.base       = #ffaa22
+  init.rough      = 0.05
+  init.ior        = 1.64
+  init.dispersion = 0.016
+  init.absorb     = lin(0.2, 1.6, 4.5)
+}
+
+material glass_emerald {
+  init.model      = .dielectric
+  init.base       = #18cc66
+  init.rough      = 0.05
+  init.ior        = 1.64
+  init.dispersion = 0.016
+  init.absorb     = lin(3.6, 0.3, 2.8)
+}
+
+// ---------------------------------------------------------------------------
+// Ensemble: Museum of Seven Heavens on Mountain of Kailash
+// ---------------------------------------------------------------------------
+
+ensemble museum_of_seven_heavens_kailash "Museum of Seven Heavens on Mountain of Kailash" {
+
+  // =========================================================================
+  // 1. TERRAIN & LEVEL APPROACH (Mount Kailash Massif, Bridge, Stairs, Halls)
+  // =========================================================================
+
+  piece kailash_massif = map::terrain(
+    init.width          = 64.0m,
+    init.depth          = 64.0m,
+    init.base_thickness = 4.0m,
+    init.amplitude      = 6.5m,
+    init.frequency      = 0.07,
+    init.plateau_radius = 18.0m,
+    init.nx             = 40,
+    init.nz             = 40,
+    init.seed           = 108,
+    init.material       = kailash_basalt,
+    init.name           = "kailash_massif"
+  )
+
+  piece samsara_bridge = map::arched_bridge(
+    init.span           = 18.0m,
+    init.width          = 4.6m,
+    init.height         = 5.2m,
+    init.arches         = 3,
+    init.parapet_height = 0.95m,
+    init.material       = celestial_marble,
+    init.deck_material  = astral_slate,
+    init.name           = "samsara_bridge"
+  ) -> place(init.at = vec3(0m, -5.2m, -27.5m))
+
+  piece ascension_stair = map::staircase(
+    init.width       = 4.6m,
+    init.length      = 9.0m,
+    init.rise        = 3.2m,
+    init.steps       = 18,
+    init.balustrades = true,
+    init.material    = celestial_marble,
+    init.name        = "ascension_stair"
+  ) -> place(init.at = vec3(0m, 0m, -18.5m))
+
+  // East & West Reliquary Galleries (map::corridor)
+  for (Int side_idx : 0..<2) {
+    let sgn = if side_idx == 0 { -1.0 } else { 1.0 }
+    piece wing_gallery[side_idx] = map::corridor(
+      init.width          = 4.2m,
+      init.length         = 10.0m,
+      init.height         = 4.8m,
+      init.wall_thickness = 0.5m,
+      init.bays           = 4,
+      init.material       = celestial_marble,
+      init.floor_material = astral_slate,
+      init.name           = "wing_gallery"
+    ) -> place(init.at = vec3(sgn * 14.5m, 3.2m, -14.0m))
+  }
+
+  // Central Sanctuary Rotunda (map::boss_arena) on the Kailash Plateau
+  piece sanctuary_rotunda = map::boss_arena(
+    init.radius         = 15.0m,
+    init.height         = 8.5m,
+    init.pillars        = 8,
+    init.dais_radius    = 4.2m,
+    init.dais_height    = 1.0m,
+    init.material       = celestial_marble,
+    init.floor_material = astral_slate,
+    init.name           = "sanctuary_rotunda"
+  ) -> place(init.at = vec3(0m, 3.2m, 0m))
+
+  // =========================================================================
+  // 2. RING OF THE SEVEN HEAVENS (7 Radial Gothic Reliquary Pavilions)
+  // =========================================================================
+
+  for (Int h : 0..<7) {
+    let angle = h * 51.4285714deg
+    let sx_dir = sin(angle)
+    let sz_dir = cos(angle)
+    let px    = seven_heavens_radius * sx_dir
+    let pz    = seven_heavens_radius * sz_dir
+    let spire_h = 8.5m + h * 1.1m
+
+    // Clustered Marble Pier of Heaven (h + 1)
+    piece heaven_pier[h] = gothic::clustered_column(
+      init.height         = 7.2m,
+      init.radius         = 0.42m,
+      init.shaft_radius   = 0.10m,
+      init.base_height    = 0.55m,
+      init.capital_height = 0.65m,
+      init.shafts         = 8,
+      init.material       = celestial_marble,
+      init.name           = "heaven_pier"
+    ) -> place(init.at = vec3(px, 3.2m, pz))
+
+    // Ogee Reliquary Archway crowning each Heaven Station
+    piece heaven_arch[h] = gothic::ogee(
+      init.span       = 2.6m,
+      init.rise       = 2.8m,
+      init.thickness  = 0.28m,
+      init.depth      = 0.40m,
+      init.inflection = 0.55,
+      init.orders     = 2,
+      init.cusps      = 3,
+      init.material   = divine_gold,
+      init.name       = "heaven_arch"
+    ) -> place(
+      init.at      = vec3(px, 7.6m, pz),
+      init.forward = dir3(0, 1, 0),
+      init.up      = dir3(sx_dir, 0, sz_dir)
+    )
+
+    // Rayonnant Stained-Glass Lancet Window in each Pavilion
+    piece heaven_lancet[h] = gothic::tracery_window(
+      init.width           = 1.8m,
+      init.height          = 4.2m,
+      init.depth           = 0.24m,
+      init.lights          = 2,
+      init.foils           = 6,
+      init.cusps           = true,
+      init.shape           = .pointed,
+      init.seed            = 10 + h,
+      init.stone_material  = celestial_marble,
+      init.lead_material   = lead,
+      init.glass_materials = ["glass_ruby", "glass_cobalt", "glass_amber", "glass_emerald"],
+      init.name            = "heaven_lancet"
+    ) -> place(
+      init.at      = vec3(px, 3.8m, pz),
+      init.forward = dir3(0, 1, 0),
+      init.up      = dir3(sx_dir, 0, sz_dir)
+    )
+
+    // Ascending Crocketed Spire of Heaven (h + 1)
+    piece heaven_spire[h] = gothic::spire(
+      init.height             = spire_h,
+      init.base_radius        = 1.15m,
+      init.finial_height      = 0.95m,
+      init.sides              = 8,
+      init.tiers              = 4,
+      init.crockets_per_ridge = 6,
+      init.material           = celestial_marble,
+      init.name               = "heaven_spire"
+    ) -> place(init.at = vec3(px, 10.4m, pz))
+
+    // Golden Bezel Pedestal & Faceted Celestial Gem Relic for Heaven (h + 1)
+    let relic_x = (seven_heavens_radius - 2.2m) * sx_dir
+    let relic_z = (seven_heavens_radius - 2.2m) * sz_dir
+
+    piece heaven_bezel[h] = jewelry::bezel(
+      init.cut      = .marquise,
+      init.width    = 36cm,
+      init.length   = 64cm,
+      init.wall     = 4cm,
+      init.lip      = 3cm,
+      init.material = divine_gold,
+      init.name     = "heaven_bezel"
+    ) -> place(init.at = vec3(relic_x, 4.8m, relic_z))
+
+    piece heaven_gem[h] = jewelry::gem(
+      init.cut      = .marquise,
+      init.width    = 36cm,
+      init.length   = 64cm,
+      init.material = glass_emerald,
+      init.name     = "heaven_gem"
+    ) -> attach(init.to = heaven_bezel[h].seat, init.via = .seat)
+  }
+
+  // =========================================================================
+  // 3. CENTRAL AXIS MUNDI BALDACHIN, ROSE WINDOWS & CROWN SPIRE
+  // =========================================================================
+
+  // Quadripartite Rib Vault Canopy over the Central Altar Dais
+  piece central_baldachin_vault = gothic::rib_vault(
+    init.width          = 8.4m,
+    init.length         = 8.4m,
+    init.rise           = 4.2m,
+    init.rib_width      = 0.28m,
+    init.rib_depth      = 0.38m,
+    init.boss_radius    = 0.42m,
+    init.web_thickness  = 0.16m,
+    init.material       = celestial_marble,
+    init.name           = "central_baldachin_vault"
+  ) -> place(init.at = vec3(0m, 10.5m, 0m))
+
+  // Four Cardinal Flying Buttresses & Rayonnant Rose Windows
+  for (Int c : 0..<4) {
+    let card_angle = c * 90deg
+    let bx = 7.8m * sin(card_angle)
+    let bz = 7.8m * cos(card_angle)
+
+    piece cardinal_buttress[c] = gothic::flying_buttress(
+      init.span            = 3.8m,
+      init.pier_height     = 11.5m,
+      init.pier_width      = 0.95m,
+      init.pier_depth      = 1.45m,
+      init.flyer_height    = 8.8m,
+      init.flyer_thickness = 0.38m,
+      init.pinnacle_height = 3.2m,
+      init.stages          = 3,
+      init.crockets        = 4,
+      init.material        = celestial_marble,
+      init.name            = "cardinal_buttress"
+    ) -> place(init.at = vec3(bx, 3.2m, bz))
+
+    piece cardinal_pinnacle[c] = gothic::pinnacle(
+      init.height   = 3.6m,
+      init.width    = 0.55m,
+      init.crockets = 5,
+      init.material = divine_gold,
+      init.name     = "cardinal_pinnacle"
+    ) -> attach(init.to = cardinal_buttress[c].pier_top, init.via = .base)
+  }
+
+  piece north_rose_mandala = gothic::rose_window(
+    init.radius          = 3.6m,
+    init.frame_width     = 0.42m,
+    init.depth           = 0.38m,
+    init.bar             = 0.09m,
+    init.lead_width      = 15mm,
+    init.petals          = 12,
+    init.rings           = 2,
+    init.cusps           = true,
+    init.seed            = 77,
+    init.stone_material  = divine_gold,
+    init.lead_material   = lead,
+    init.glass_materials = ["glass_ruby", "glass_cobalt", "glass_amber", "glass_emerald"],
+    init.name            = "north_rose_mandala"
+  ) -> place(init.at = vec3(0m, 11.2m, 8.2m))
+
+  // Axis Mundi Central Crown Spire
+  piece axis_mundi_spire = gothic::spire(
+    init.height             = axis_mundi_spire_height,
+    init.base_radius        = 2.2m,
+    init.finial_height      = 1.6m,
+    init.sides              = 8,
+    init.tiers              = 5,
+    init.crockets_per_ridge = 10,
+    init.material           = divine_gold,
+    init.name               = "axis_mundi_spire"
+  ) -> place(init.at = vec3(0m, 14.7m, 0m))
+
+  // Helical Golden Ascension Ribbon coiled vertically around the Central Dais (`std::curve` + `std::sweep`)
+  let ribbon_helix = std::curve::helix(
+    init.r0      = 4.6m,
+    init.r1      = 2.8m,
+    init.height  = 8.5m,
+    init.turns   = 2.2,
+    init.samples = 96
+  )
+  let ribbon_section = std::profile::d_band(
+    init.width     = 16cm,
+    init.thickness = 5cm,
+    init.samples   = 24
+  )
+  piece celestial_helix_ribbon = std::sweep::pipe(
+    init.spine       = ribbon_helix,
+    init.profile     = ribbon_section,
+    init.scale_start = 1.0,
+    init.scale_end   = 0.45,
+    init.point_tip   = true,
+    init.material    = divine_gold,
+    init.name        = "celestial_helix_ribbon"
+  ) -> place(
+    init.at      = vec3(0m, 4.2m, 0m),
+    init.forward = dir3(0, 0, 1),
+    init.up      = dir3(0, 1, 0)
+  )
+
+  // =========================================================================
+  // 4. SERAPH CURATOR CHARACTER & SACRED RELIC ARMS (On Central Altar Dais)
+  // =========================================================================
+
+  piece seraph_guardian = character::human(
+    init.height         = 1.92m,
+    init.shoulder_width = 0.44m,
+    init.chest_depth    = 0.24m,
+    init.waist_width    = 0.29m,
+    init.hip_width      = 0.37m,
+    init.musculature    = 0.55,
+    init.pose           = "heroic",
+    init.hand_l         = "grip",
+    init.hand_r         = "grip",
+    init.grip_radius    = 16mm,
+    init.resolution     = 10mm,
+    init.hair           = true,
+    init.pointed_ears   = true,
+    init.material       = seraph_alabaster,
+    init.hair_material  = silver_hair,
+    init.name           = "seraph_guardian"
+  ) -> place(init.at = vec3(0m, 4.2m, 0m))
+
+  // Radiant Sunburst Halo on Head Crown
+  piece seraph_halo = appendage::halo(
+    init.radius     = 16cm,
+    init.thickness  = 8mm,
+    init.height     = 12cm,
+    init.back       = 4cm,
+    init.tilt       = 15deg,
+    init.rays       = 12,
+    init.ray_length = 7cm,
+    init.ray_width  = 14mm,
+    init.material   = solar_halo,
+    init.name       = "seraph_halo"
+  ) -> attach(init.to = seraph_guardian.head.crown)
+
+  // Golden Brow Circlet & Ruby Crest Gem
+  piece seraph_circlet = jewelry::circlet(
+    init.width     = 17.2cm,
+    init.depth     = 20.8cm,
+    init.height    = 8mm,
+    init.thickness = 2mm,
+    init.peak      = 16mm,
+    init.material  = divine_gold,
+    init.name      = "seraph_circlet"
+  ) -> attach(init.to = seraph_guardian.head.brow)
+
+  piece circlet_star_gem = jewelry::gem(
+    init.cut      = .pear,
+    init.width    = 10mm,
+    init.length   = 15mm,
+    init.material = glass_ruby,
+    init.name     = "circlet_star_gem"
+  ) -> attach(init.to = seraph_circlet.front, init.via = .seat)
+
+  // Ceremonial Golden Necklace
+  piece seraph_necklace = jewelry::necklace(
+    init.width    = 16cm,
+    init.depth    = 14cm,
+    init.drop     = 6.5cm,
+    init.link     = 4mm,
+    init.wire     = 0.8mm,
+    init.material = divine_gold,
+    init.name     = "seraph_necklace"
+  ) -> attach(init.to = seraph_guardian.neck.base)
+
+  // Bilateral Feathered Seraph Wings attached to Back Scapulae
+  let seraph_wing_l = appendage::wing(
+    init.kind        = .feathered,
+    init.span        = 1.65m,
+    init.spread      = 0.90,
+    init.sweep       = 20deg,
+    init.lift        = 24deg,
+    init.primaries   = 12,
+    init.secondaries = 14,
+    init.material    = seraph_feather,
+    init.name        = "seraph_wing"
+  )
+  sides L, R as side {
+    piece guardian_wing[side] = seraph_wing_l
+      -> sided(side)
+      -> attach(init.to = seraph_guardian.back.scapula[side])
+  }
+
+  // Sword of the Seventh Heaven in Right Hand Grip
+  piece seventh_heaven_sword = weapon::longsword(
+    init.blade_length   = relic_blade_length,
+    init.blade_width    = 50mm,
+    init.thickness      = 7mm,
+    init.section        = .diamond,
+    init.fuller         = true,
+    init.guard_width    = 26cm,
+    init.grip_length    = 22cm,
+    init.pommel_radius  = 28mm,
+    init.blade_material = meteoric_steel,
+    init.hilt_material  = divine_gold,
+    init.grip_material  = cord_leather,
+    init.name           = "seventh_heaven_sword"
+  ) -> attach(init.to = seraph_guardian.hand[.R].grip, init.via = .grip)
+
+  // Aegis of Kailash Heater Shield mounted on Left Forearm
+  piece kailash_aegis_shield = weapon::heater_shield(
+    init.width            = 58cm,
+    init.height           = 74cm,
+    init.thickness        = 12mm,
+    init.curvature_radius = 92cm,
+    init.mount_offset     = 38mm,
+    init.face_material    = lapis_enamel,
+    init.trim_material    = divine_gold,
+    init.name             = "kailash_aegis_shield"
+  ) -> attach(init.to = seraph_guardian.forearm[.L], init.via = .mount)
+
+  // =========================================================================
+  // 5. ABYSSAL KAILASH GATEKEEPER & SENTINEL CREATURES
+  // =========================================================================
+
+  // Colossal Draconic Gatekeeper facing South (-Z) at the Southern Sanctuary Threshold
+  piece kailash_gatekeeper = creature::monster(
+    init.archetype     = "draconic",
+    init.scale         = 1.45,
+    init.bulk          = 0.85,
+    init.tail_length   = 2.2m,
+    init.dorsal_spines = 8,
+    init.claws         = true,
+    init.horns         = true,
+    init.fangs         = true,
+    init.resolution    = 18mm,
+    init.material      = abyssal_chitin,
+    init.horn_material = dragon_bone,
+    init.name          = "kailash_gatekeeper"
+  ) -> place(
+    init.at      = vec3(0m, 3.2m, -8.2m),
+    init.forward = dir3(0, 1, 0),
+    init.up      = dir3(0, 0, -1)
+  )
+
+  // Segmented Dorsal Chitin Carapace on Gatekeeper's Back
+  piece gatekeeper_carapace = creature::carapace_plate(
+    init.length      = 0.85m,
+    init.width       = 0.62m,
+    init.arch_height = 0.16m,
+    init.segments    = 5,
+    init.material    = abyssal_chitin,
+    init.name        = "gatekeeper_carapace"
+  ) -> attach(init.to = kailash_gatekeeper.spine.mid)
+
+  // Bilateral Bat-Membrane Dragon Wings on Gatekeeper's Scapulae
+  let draconic_wing_l = appendage::wing(
+    init.kind          = .membrane,
+    init.span          = 2.25m,
+    init.spread        = 0.88,
+    init.sweep         = 22deg,
+    init.lift          = 28deg,
+    init.fingers       = 4,
+    init.material      = draconic_wing_membrane,
+    init.bone_material = dragon_bone,
+    init.name          = "gatekeeper_wing"
+  )
+  sides L, R as side {
+    piece gatekeeper_wings[side] = draconic_wing_l
+      -> sided(side)
+      -> attach(init.to = kailash_gatekeeper.wing[side])
+  }
+
+  // Twin Quadrupedal Snow-Stalker Sentinels flanking the East & West Portals
+  for (Int s_idx : 0..<2) {
+    let sx = if s_idx == 0 { -5.2m } else { 5.2m }
+    piece portal_sentinel[s_idx] = creature::monster(
+      init.archetype     = "quadruped",
+      init.scale         = 0.95,
+      init.bulk          = 0.65,
+      init.tail_length   = 1.1m,
+      init.dorsal_spines = 5,
+      init.claws         = true,
+      init.horns         = true,
+      init.fangs         = true,
+      init.resolution    = 18mm,
+      init.material      = abyssal_chitin,
+      init.horn_material = dragon_bone,
+      init.name          = "portal_sentinel"
+    ) -> place(
+      init.at      = vec3(sx, 3.2m, -6.5m),
+      init.forward = dir3(0, 1, 0),
+      init.up      = dir3(0, 0, -1)
+    )
+  }
+}
