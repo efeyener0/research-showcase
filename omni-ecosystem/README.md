@@ -13,7 +13,7 @@ Omni Ecosystem
 ├── Omni-Toolkit (Python 3.12 CLI & Orchestration Core)
 │   ├── scripts/cl.py          # 2-tier Claude Code runner with Static-Prefix Routing & --diet mode
 │   ├── scripts/cx.py          # 2-tier Codex CLI runner with disjoint file-ownership locks (--owns)
-│   ├── scripts/ag.py          # Antigravity SDK & remote Colab Pro+ Linux GPU VM agent bridge
+│   ├── scripts/ag.py          # Antigravity SDK & remote Google Colab Linux GPU VM agent bridge
 │   └── scripts/mem.py         # Persistent SQLite FTS5 (BM25) cross-project memory, todos & ledgers
 └── Omni-Workbench (Native Tauri v2 Desktop App + IDE Sidecar + Cloud Manager)
     ├── server.py & ui.html    # Shared control-tower backend, 256K/1M context gauge & ConPTY terminal
@@ -42,6 +42,6 @@ Eliminates cross-session amnesia and epistemic drift over multi-month R&D lifecy
 - Separates **`active`** vs. **`legacy`** repositories in `projects.json` with structured Markdown project cards, persistent cross-project todos, immutable decision ledgers (`LEDGER`), and an **SQLite FTS5 (`BM25`)** full-text search index over `facts.jsonl`.
 - Enforces **strict opt-in worker injection**: project memory is never blindly dumped into subagent prompts; only targeted slices (`--mem-project <slug>` / `--mem-query <q>`) are appended at the prompt tail when required.
 
-### 2.4. Remote Colab Pro+ GPU Sandbox Bridge (`ag.py colab-agent`) & Zero-Copy Cloud (`pm.py`)
-- **Remote GPU Agent Execution:** Dispatches containerized agent and training workloads onto **Colab Pro+ Linux GPU VMs** via ADC authentication with in-memory DPAPI credential injection (`omni_vault`) and guaranteed `finally:` VM teardown.
+### 2.4. Remote Google Colab GPU Sandbox Bridge (`ag.py colab-agent`) & Zero-Copy Cloud (`pm.py`)
+- **Remote GPU Agent Execution:** Dispatches containerized agent and training workloads onto **Google Colab Linux GPU VMs** via ADC authentication with in-memory DPAPI credential injection (`omni_vault`) and guaranteed `finally:` VM teardown.
 - **Zero-Copy Asset Management (`pm.py`):** Offloads multi-gigabyte binary/3D/render directories to cloud-synced storage via Windows NTFS directory junctions (`mklink /J`), reducing local SSD footprint for cold assets to **0 bytes** while preserving transparent filesystem paths.
