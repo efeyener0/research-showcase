@@ -28,7 +28,7 @@ Omni Ecosystem
 ### 2.1. Static-Prefix Prompt Routing & `--diet` Context Compression (`61%` Reduction)
 Long-horizon agentic workflows frequently suffer from context-window bloat and prompt-prefix invalidation:
 - **Invariant Head Prefix:** `cl.py`, `cx.py`, and `ag.py` keep `STATIC_GLOBAL_SYSTEM_PROMPT` and `STATIC_WORKER_PREFIX` 100% byte-invariant at the head of every request. Dynamic task state—persona (`Lisa`, `Cameron`, `Maya`, `Kiri`, `Miriam`, `Mia`, `Vera`), canary verification tokens, `--owns` write globs, git commit trailers, and opt-in `--memory` slices—is strictly **tail-appended**.
-- **Schema-Stripped Diet Mode (`--diet`):** For high-frequency implementation and scouting subagents, `--diet` strips non-essential slash commands, session persistence overhead, and unused MCP tool schemas, compressing the base context footprint by **61% (from `~28K` tokens down to `~10.9K` tokens)**.
+- **Schema-Stripped Diet Mode (`--diet`) for Disposable Subagents:** For disposable implementation and scouting subagents, `--diet` strips non-essential slash commands, session persistence overhead, and unused MCP tool schemas, reducing initial context overhead by **61% (from `~28K` tokens down to `~10.9K` tokens)**.
 
 ### 2.2. 2-Tier Role-Specialized Co-Agent Hierarchy & Disjoint File Ownership (`--owns`)
 To scale autonomous software engineering across **20+ repositories** without race conditions or merge conflicts, work is partitioned **by disjoint file ownership rather than overlapping functional tasks**:
